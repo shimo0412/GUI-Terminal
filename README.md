@@ -4,6 +4,7 @@
 
 This application is a GUI-based version of Windows' cmd. It supports basic commands, Git commands, and Python commands. It is designed to be easy to use, even for beginners in programming.
 
+![GUI Terminal](./assets/p1.png)
 
 
 ## 🛠️ Main Features
@@ -41,9 +42,9 @@ Run the command above.
 
 ## 📷 Demo
 
+![GUI Terminal](./assets/p2.png)
 
-
-
+![GUI Terminal](./assets/p3.png)
 
 ## 💡 Development Environment
 
