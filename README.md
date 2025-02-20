@@ -36,8 +36,8 @@ cd GUI-Terminal
 python ./src/main.py
 ```
 
-Run the command above.
-2\. **Step 2**: Select the button for the command you want to use.
+Run the command above.<br>
+2\. **Step 2**: Select the button for the command you want to use.<br>
 3\. **Step 3**: Choose command options and paths, then execute the command.
 
 ## 📷 Demo
