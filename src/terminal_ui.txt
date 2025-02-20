@@ -1,0 +1,87 @@
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QLabel, QComboBox, QTextEdit
+from PySide6.QtCore import QProcess
+from command_executor import execute_command
+import os
+
+class TerminalApp(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("GUI Terminal")
+        self.setStyleSheet("background-color: black; color: white;")
+        
+        self.main_layout = QHBoxLayout()
+        self.left_panel = QVBoxLayout()
+        
+        self.commands = {
+            "dir": {"desc": "現在のディレクトリの一覧を表示", "options": ["/A", "/B"]},
+            "ipconfig": {"desc": "IP設定を表示", "options": ["/all", "/renew"]}
+        }
+        
+        self.create_command_buttons()
+        
+        # ターミナル出力用ウィジェット
+        self.terminal_output = QTextEdit()
+        self.terminal_output.setReadOnly(True)
+        self.terminal_output.setStyleSheet("background-color: black; color: white;")
+        
+        # QProcess の設定
+        self.terminal = QProcess(self)
+        self.terminal.setProgram("cmd")
+        self.terminal.setProcessChannelMode(QProcess.MergedChannels)
+        self.terminal.readyReadStandardOutput.connect(self.update_terminal_output)
+        self.terminal.start()
+        
+        self.main_layout.addLayout(self.left_panel)
+        self.main_layout.addWidget(self.terminal_output)
+        self.setLayout(self.main_layout)
+    
+    def create_command_buttons(self):
+        for cmd in self.commands:
+            btn = QPushButton(cmd)
+            btn.clicked.connect(lambda _, c=cmd: self.show_command_options(c))
+            self.left_panel.addWidget(btn)
+    
+    def show_command_options(self, command):
+        while self.left_panel.count():
+            item = self.left_panel.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        
+        back_button = QPushButton("戻る")
+        back_button.clicked.connect(self.reset_command_buttons)
+        
+        cmd_label = QLabel(command)
+        option_box = QComboBox()
+        option_box.addItems(self.commands[command]["options"])
+        
+        execute_button = QPushButton("実行")
+        execute_button.clicked.connect(lambda: self.run_command_with_option(command, option_box.currentText()))
+        
+        description = QLabel(self.commands[command]["desc"])
+        
+        self.left_panel.addWidget(back_button)
+        self.left_panel.addWidget(cmd_label)
+        self.left_panel.addWidget(option_box)
+        self.left_panel.addWidget(execute_button)
+        self.left_panel.addWidget(description)
+    
+    def reset_command_buttons(self):
+        while self.left_panel.count():
+            item = self.left_panel.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        self.create_command_buttons()
+    
+    def run_command_with_option(self, command, option):
+        full_command = f"{command} {option}\n"
+        self.terminal.write(full_command.encode())
+        self.terminal.waitForBytesWritten()
+    
+    def update_terminal_output(self):
+        output = self.terminal.readAllStandardOutput().data().decode("utf-8")
+        self.terminal_output.append(output)
+    
+    def closeEvent(self, event):
+        self.terminal.terminate()
+        self.terminal.waitForFinished()
+        event.accept()
